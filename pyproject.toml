@@ -1,4 +1,13 @@
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = ["setuptools>=63.0.0"]
+
 [project]
 name = "apify-aal-utils"
 version = "0.1.0"
+dependencies = [
+  "tqdm >=4.65.0, <4.66.0",
+]
+requires-python = ">=3.8"
+readme = "README.rst"
 description = "Reusable utilities for Apify AAL Actors"
