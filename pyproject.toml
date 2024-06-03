@@ -1,0 +1,4 @@
+[project]
+name = "apify-aal-utils"
+version = "0.1.0"
+description = "Reusable utilities for Apify AAL Actors"
