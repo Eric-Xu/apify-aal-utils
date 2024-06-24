@@ -4,4 +4,4 @@ PROPERTY DATA
 ------------------------------------------------------------
 """
 
-CITY_SUFFIXES = ["boro", "boro.", "twp", "twp."]
+CITY_SUFFIXES = ["borough", "boro", "township", "twp"]

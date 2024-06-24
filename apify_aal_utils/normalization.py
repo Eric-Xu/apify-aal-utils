@@ -1,5 +1,7 @@
 import re
 
+import usaddress
+
 from .constants import CITY_SUFFIXES
 
 
@@ -35,15 +37,57 @@ def clean_city(value: str) -> str:
     the Zillow Search API.
 
     Sample Inputs:
-        "Scotch Plains Twp., NJ"
-        "Roselle Park Boro, NJ"
+        "Scotch Plains Twp."
+        "Roselle Park Boro"
 
     Outputs:
-        "Scotch Plains, NJ"
-        "Roselle Park, NJ"
+        "Scotch Plains"
+        "Roselle Park"
     """
     city_temp = value
     for suffix in CITY_SUFFIXES:
         city_temp = re.sub(suffix, "", city_temp, flags=re.IGNORECASE)
+        city_temp = re.sub(r"[^a-zA-Z-\s]", "", city_temp)
+        city_temp = city_temp.strip()
     city_cleaned = " ".join(city_temp.split())
     return city_cleaned
+
+
+def simple_zipcode(value: str) -> str:
+    """
+    Converts a 9-digit zipcode into a 5-digit zipcode.
+
+    Sample Inputs:
+        "07005-9551"
+        "07670"
+
+    Outputs:
+        "07005"
+        "07670"
+    """
+    return value.replace(" ", "").split("-")[0]
+
+
+def simple_address(value: str) -> str:
+    """
+    Removes city suffixes.
+    Converts a 9-digit zipcode into 5 digits.
+
+    Sample Inputs:
+        "339 Split Rock Rd, Rockaway Twp., NJ 07005-9551"
+        "95 Walnut Dr, Tenafly, NJ 07670"
+
+    Outputs:
+        "339 Split Rock Rd, Rockaway, NJ 07005"
+        "95 Walnut Dr, Tenafly, NJ 07670"
+    """
+    result = ""
+    address_components, address_type = usaddress.tag(value)
+    if address_type == "Street Address":
+        city_original: str = address_components["PlaceName"]
+        city_cleaned: str = clean_city(city_original)
+        zipcode_original: str = address_components["ZipCode"]
+        zipcode_5_digit: str = simple_zipcode(zipcode_original)
+        result = value.replace(city_original, city_cleaned)
+        result = result.replace(zipcode_original, zipcode_5_digit)
+    return result
