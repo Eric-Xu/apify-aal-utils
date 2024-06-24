@@ -1,5 +1,7 @@
 import re
 
+from .constants import CITY_SUFFIXES
+
 
 def safe_filename_component(value: str) -> str:
     """
@@ -25,3 +27,23 @@ def safe_filename_component(value: str) -> str:
     result: str = re.sub(r"  +", " ", result)
     result: str = result.replace(" ", "-").lower()
     return result
+
+
+def clean_city(value: str) -> str:
+    """
+    City suffixes must be removed in order to be used as search terms in
+    the Zillow Search API.
+
+    Sample Inputs:
+        "Scotch Plains Twp., NJ"
+        "Roselle Park Boro, NJ"
+
+    Outputs:
+        "Scotch Plains, NJ"
+        "Roselle Park, NJ"
+    """
+    city_temp = value
+    for suffix in CITY_SUFFIXES:
+        city_temp = re.sub(suffix, "", city_temp, flags=re.IGNORECASE)
+    city_cleaned = " ".join(city_temp.split())
+    return city_cleaned
