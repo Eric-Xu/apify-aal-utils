@@ -53,9 +53,9 @@ def clean_city(value: str) -> str:
     return city_cleaned
 
 
-def simple_zipcode(value: str) -> str:
+def rm_zip_code_extension(value: str) -> str:
     """
-    Converts a 9-digit zipcode into a 5-digit zipcode.
+    Converts a 9-digit ZIP Code into a 5-digit ZIP Code.
 
     Sample Inputs:
         "07005-9551"
@@ -71,7 +71,7 @@ def simple_zipcode(value: str) -> str:
 def simple_address(value: str) -> str:
     """
     Removes city suffixes.
-    Converts a 9-digit zipcode into 5 digits.
+    Converts a 9-digit ZIP Code into 5 digits.
 
     Sample Inputs:
         "339 Split Rock Rd, Rockaway Twp., NJ 07005-9551"
@@ -86,8 +86,8 @@ def simple_address(value: str) -> str:
     if address_type == "Street Address":
         city_original: str = address_components["PlaceName"]
         city_cleaned: str = clean_city(city_original)
-        zipcode_original: str = address_components["ZipCode"]
-        zipcode_5_digit: str = simple_zipcode(zipcode_original)
+        zip_code_original: str = address_components["ZipCode"]
+        zip_code_5_digit: str = rm_zip_code_extension(zip_code_original)
         result = value.replace(city_original, city_cleaned)
-        result = result.replace(zipcode_original, zipcode_5_digit)
+        result = result.replace(zip_code_original, zip_code_5_digit)
     return result
