@@ -4,6 +4,41 @@ from typing import Dict, List
 from google.cloud.bigquery.client import Client
 
 
+def sql_where(_dict: Dict, grouping="AND") -> str:
+    """
+    Converts a dictionary into a SQL WHERE clause. Use the optional grouping argument
+    to define the exact gouping of the individual keys.
+
+    _dict = {
+        "str_field": "a",
+        "int_field": 1,
+        "bool_field": True,
+        "date_field": datetime.now().date(),
+        "null_field": None,
+    }
+    >>> sql_where(_dict)
+    "WHERE str_field = 'a' AND int_field = 1 AND bool_field = True AND date_field = '2024-06-16' AND null_field = NULL"
+    """
+    if not _dict:
+        raise ValueError("The WHERE dictionary argument cannot be empty.")
+    if grouping.lower() not in ["and", "or"]:
+        raise ValueError(
+            "The WHERE clause's Grouping Value must be either 'AND' or 'OR'."
+        )
+
+    temp = list()
+    for k, v in _dict.items():
+        if type(v) == str or type(v) == date or type(v) == datetime:
+            temp.append(f"{k} = '{v}'")
+        elif v is None:
+            temp.append(f"{k} = NULL")
+        else:
+            temp.append(f"{k} = {v}")
+    result = f" {grouping} ".join(temp)
+    result = f"WHERE {result}"
+    return result
+
+
 def _list_to_insert_values(items: List) -> str:
     """
     _list = ['a', 2, True, 'b', datetime.now()]
