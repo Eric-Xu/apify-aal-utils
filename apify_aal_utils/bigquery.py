@@ -6,7 +6,8 @@ from google.cloud.bigquery.client import Client
 
 def _list_to_insert_values(items: List) -> str:
     """
-    >>> _list_to_insert_values(['a', 2, True, 'b', datetime.now()])
+    _list = ['a', 2, True, 'b', datetime.now()]
+    >>> _list_to_insert_values(_list)
     "'a', 2, True, 'b', '2024-06-16 23:24:22.715454'"
     """
     temp = list()
@@ -54,11 +55,11 @@ def _compose_insert_stmt(table_ref: str, records: List[Dict]) -> str:
     """
     https://cloud.google.com/bigquery/docs/reference/standard-sql/dml-syntax#insert_statement
 
-    INSERT dataset.inventory (product, quantity)
+    INSERT dataset.inventory (product, price, quantity)
     VALUES
-        ('top load washer', 10),
-        ('front load washer', 20),
-        ('oven', 5)
+        ('top load washer', 499.99, 10),
+        ('front load washer', 899.99 20),
+        ('oven', 1099.00, 5)
     """
     columns: str = ", ".join(records[0].keys())
     values_str: str = _dicts_to_insert_values(records)
@@ -72,6 +73,59 @@ def insert_records(client: Client, table_ref: str, records: List[Dict]) -> int:
     insert_job = client.query(insert_statement)
     insert_job.result()  # Waits for the query to finish
     affected_rows: int | None = insert_job.num_dml_affected_rows
+    affected_rows = affected_rows if affected_rows else 0
+    print(f"Number of affected rows: {affected_rows}")
+    return affected_rows
+
+
+def _dict_to_update_set_values(_dict: Dict) -> str:
+    """
+    _dict = {
+        "str_field": "a",
+        "int_field": 1,
+        "bool_field": True,
+        "date_field": datetime.now().date(),
+        "null_field": None,
+    }
+    >>> _dict_to_update_set_values(_dict)
+    "str_field = 'a', int_field = 1, bool_field = True, date_field = '2024-06-16', null_field = NULL"
+    """
+    temp = list()
+    for k, v in _dict.items():
+        if type(v) == str or type(v) == date or type(v) == datetime:
+            temp.append(f"{k} = '{v}'")
+        elif v is None:
+            temp.append(f"{k} = NULL")
+        else:
+            temp.append(f"{k} = {v}")
+    result = ", ".join(temp)
+    return result
+
+
+def _compose_update_stmt(table_ref: str, record: Dict, where_clause: str) -> str:
+    """
+    https://cloud.google.com/bigquery/docs/reference/standard-sql/dml-syntax#update_statement
+
+    UPDATE dataset.inventory
+    SET price = 999.99,
+        quantity = NULL
+    WHERE product = 'oven'
+    """
+    set_values_str: str = _dict_to_update_set_values(record)
+    where_clause = where_clause.lower().removeprefix("where").strip()
+    where_clause = where_clause.replace('"', "'")
+    update_statement = f"UPDATE {table_ref} SET {set_values_str} WHERE {where_clause}"
+    print(update_statement)
+    return update_statement
+
+
+def update_record(
+    client: Client, table_ref: str, record: Dict, where_clause: str
+) -> int:
+    update_statement = _compose_update_stmt(table_ref, record, where_clause)
+    update_job = client.query(update_statement)
+    update_job.result()  # Waits for the query to finish
+    affected_rows: int | None = update_job.num_dml_affected_rows
     affected_rows = affected_rows if affected_rows else 0
     print(f"Number of affected rows: {affected_rows}")
     return affected_rows
