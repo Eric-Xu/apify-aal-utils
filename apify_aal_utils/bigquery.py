@@ -80,8 +80,6 @@ def _dicts_to_insert_values(dicts: List[Dict]) -> str:
     for d in dicts:
         values_str = _list_to_insert_values(list(d.values()))
         result_temp.append(f"({values_str})")
-    log_result = "\n".join(result_temp)
-    print(f"Updated values:\n{log_result}")
     result = ", ".join(result_temp)
     return result
 
@@ -99,7 +97,7 @@ def _compose_insert_stmt(table_ref: str, records: List[Dict]) -> str:
     columns: str = ", ".join(records[0].keys())
     values_str: str = _dicts_to_insert_values(records)
     insert_statement = f"INSERT {table_ref} ({columns}) VALUES {values_str}"
-    print(insert_statement)
+    print(f"Insert Statement:\n{insert_statement}")
     return insert_statement
 
 
@@ -147,7 +145,7 @@ def _compose_update_stmt(table_ref: str, record: Dict, where_clause: str) -> str
     WHERE product = 'oven'
     """
     set_values_str: str = _dict_to_update_set_values(record)
-    where_clause = where_clause.lower().removeprefix("where").strip()
+    where_clause = where_clause.removeprefix("where").strip()
     where_clause = where_clause.replace('"', "'")
     update_statement = f"UPDATE {table_ref} SET {set_values_str} WHERE {where_clause}"
     print(update_statement)
