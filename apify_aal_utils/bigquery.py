@@ -2,6 +2,38 @@ from datetime import date, datetime
 from typing import Dict, List
 
 from google.cloud.bigquery.client import Client
+from google.cloud.bigquery.table import RowIterator
+
+
+def _compose_select_stmt(
+    table_ref: str, what: str = "*", sql_clauses: str | None = None
+) -> str:
+    select_statement = " ".join(
+        [
+            f"SELECT {what}",
+            f"FROM {table_ref}",
+            f"{sql_clauses if sql_clauses else ''}",
+        ]
+    ).strip()
+    print(f"Select Statement:\n{select_statement}")
+    return select_statement
+
+
+def select(
+    client: Client, table_ref: str, what: str = "*", sql_clauses: str | None = None
+) -> RowIterator:
+    """
+    Selects `what` from `table_ref` with additional `sql_clauses` such as
+    WHERE, ORDER, GROUP, LIMIT, and OFFSET.
+
+    https://github.com/webpy/webpy/blob/master/web/db.py#L832
+    """
+    select_statement = _compose_select_stmt(table_ref, what, sql_clauses)
+    query_job = client.query(select_statement)
+    rows: RowIterator = query_job.result()
+    row_count: int | None = rows.total_rows
+    print(f"Selected {row_count} records.")
+    return rows
 
 
 def sql_where(_dict: Dict, grouping="AND") -> str:
