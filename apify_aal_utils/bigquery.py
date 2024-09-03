@@ -145,9 +145,8 @@ def _compose_update_stmt(table_ref: str, record: Dict, where_clause: str) -> str
     WHERE product = 'oven'
     """
     set_values_str: str = _dict_to_update_set_values(record)
-    where_clause = where_clause.removeprefix("where").strip()
     where_clause = where_clause.replace('"', "'")
-    update_statement = f"UPDATE {table_ref} SET {set_values_str} WHERE {where_clause}"
+    update_statement = f"UPDATE {table_ref} SET {set_values_str} {where_clause}"
     print(update_statement)
     return update_statement
 
